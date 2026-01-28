@@ -80,6 +80,25 @@ const AddWordScreen = ({ addWord, importWords }) => {
     }
   };
 
+  const openDeepSeek = async () => {
+    const url = 'https://www.deepseek.com';
+    
+    try {
+      // 检查是否可以打开该链接
+      const supported = await Linking.canOpenURL(url);
+      
+      if (supported) {
+        // 打开DeepSeek官网
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('错误', '无法打开该链接');
+      }
+    } catch (error) {
+      console.error('打开链接失败:', error);
+      Alert.alert('错误', '打开链接失败');
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>添加新单词</Text>
@@ -122,6 +141,12 @@ const AddWordScreen = ({ addWord, importWords }) => {
             <Text style={styles.importText}>选择TXT文件</Text>
           </TouchableOpacity>
         </View>
+        <View style={styles.importControls}>
+          <TouchableOpacity style={styles.importButton} onPress={openDeepSeek}>
+            <Ionicons name="file-outline" size={18} color="#666" style={styles.importIcon} />
+            <Text style={styles.importText}>AI自动生成txt文件</Text>
+          </TouchableOpacity>
+        </View>        
 
         {importStatus ? (
           <Text style={styles.importStatus}>{importStatus}</Text>
