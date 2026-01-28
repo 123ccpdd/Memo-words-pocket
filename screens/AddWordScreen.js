@@ -89,6 +89,7 @@ const AddWordScreen = ({ addWord, importWords }) => {
         <TextInput
           style={styles.input}
           placeholder="例如：apple"
+          placeholderTextColor="#999"
           value={english}
           onChangeText={setEnglish}
           autoCapitalize="none"
@@ -100,6 +101,7 @@ const AddWordScreen = ({ addWord, importWords }) => {
         <TextInput
           style={styles.input}
           placeholder="例如：苹果"
+          placeholderTextColor="#999"
           value={chinese}
           onChangeText={setChinese}
         />
