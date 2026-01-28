@@ -10,7 +10,8 @@ const QuizScreen = ({ words }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [userAnswers, setUserAnswers] = useState([]);
-  const [showAnswers, setShowAnswers] = useState(false);
+  const [showAnswerForCurrent, setShowAnswerForCurrent] = useState(false);
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
 
   // 开始默写
   const startQuiz = () => {
@@ -37,7 +38,8 @@ const QuizScreen = ({ words }) => {
     setUserAnswers(new Array(selectedWords.length).fill(''));
     setCurrentIndex(0);
     setUserAnswer('');
-    setShowAnswers(false);
+    setShowAnswerForCurrent(false);
+    setShowAllAnswers(false);
     setQuizStarted(true);
   };
 
@@ -51,6 +53,7 @@ const QuizScreen = ({ words }) => {
       
       setCurrentIndex(currentIndex - 1);
       setUserAnswer(userAnswers[currentIndex - 1] || '');
+      setShowAnswerForCurrent(false); // 切换单词时隐藏答案
     }
   };
 
@@ -64,22 +67,38 @@ const QuizScreen = ({ words }) => {
       
       setCurrentIndex(currentIndex + 1);
       setUserAnswer(userAnswers[currentIndex + 1] || '');
+      setShowAnswerForCurrent(false); // 切换单词时隐藏答案
     }
   };
 
-  // 显示答案
-  const handleShowAnswers = () => {
-    // 保存最后一个答案
+  // 显示当前单词答案
+  const handleShowCurrentAnswer = () => {
+    // 保存当前答案
     const updatedAnswers = [...userAnswers];
     updatedAnswers[currentIndex] = userAnswer;
     setUserAnswers(updatedAnswers);
     
-    setShowAnswers(true);
+    setShowAnswerForCurrent(true);
+  };
+
+  // 显示全部答案
+  const handleShowAllAnswers = () => {
+    // 保存当前答案
+    const updatedAnswers = [...userAnswers];
+    updatedAnswers[currentIndex] = userAnswer;
+    setUserAnswers(updatedAnswers);
+    
+    setShowAllAnswers(true);
   };
 
   // 重新开始默写
   const restartQuiz = () => {
     startQuiz();
+  };
+
+  // 返回默写界面
+  const backToQuiz = () => {
+    setShowAllAnswers(false);
   };
 
   // 渲染默写设置界面
@@ -166,14 +185,26 @@ const QuizScreen = ({ words }) => {
 
         <View style={styles.promptContainer}>
           <Text style={styles.promptText}>{promptText}</Text>
+          
           <TextInput
             style={styles.answerInput}
             placeholder={quizMode === 'chinese-to-english' ? '请输入英文单词...' : '请输入中文释义...'}
+            placeholderTextColor="#999"
             value={userAnswer}
             onChangeText={setUserAnswer}
             autoCapitalize={quizMode === 'chinese-to-english' ? 'none' : 'sentences'}
             autoFocus={true}
           />
+
+          {/* 显示当前单词的答案 */}
+          {showAnswerForCurrent && (
+            <View style={styles.currentAnswerContainer}>
+              <Text style={styles.answerLabel}>正确答案：</Text>
+              <Text style={styles.correctAnswerText}>
+                {quizMode === 'chinese-to-english' ? currentWord.english : currentWord.chinese}
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.navigationButtons}>
@@ -196,16 +227,23 @@ const QuizScreen = ({ words }) => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.showAnswerButton} onPress={handleShowAnswers}>
-          <Ionicons name="eye-outline" size={20} color="white" style={styles.buttonIcon} />
-          <Text style={styles.buttonText}>查看答案</Text>
-        </TouchableOpacity>
+        <View style={styles.quizActions}>
+          <TouchableOpacity style={styles.showAnswerButton} onPress={handleShowCurrentAnswer}>
+            <Ionicons name="eye-outline" size={20} color="white" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>查看答案</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.showAllButton} onPress={handleShowAllAnswers}>
+            <Ionicons name="list-outline" size={20} color="white" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>查看全部</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
 
-  // 渲染答案界面
-  const renderAnswers = () => {
+  // 渲染全部答案界面
+  const renderAllAnswers = () => {
     return (
       <View style={styles.answersContainer}>
         <Text style={styles.title}>答案对照</Text>
@@ -215,7 +253,7 @@ const QuizScreen = ({ words }) => {
             <View key={word.id} style={styles.answerItem}>
               <Text style={styles.answerNumber}>{index + 1}.</Text>
               
-              <View style={styles.answerContent}>
+              <View style={[styles.answerContent, currentIndex === index && styles.currentAnswerHighlight]}>
                 <Text style={styles.questionText}>
                   {quizMode === 'chinese-to-english' ? word.chinese : word.english}
                 </Text>
@@ -240,10 +278,17 @@ const QuizScreen = ({ words }) => {
           ))}
         </ScrollView>
 
-        <TouchableOpacity style={styles.restartButton} onPress={restartQuiz}>
-          <Ionicons name="refresh-outline" size={20} color="white" style={styles.buttonIcon} />
-          <Text style={styles.buttonText}>重新默写</Text>
-        </TouchableOpacity>
+        <View style={styles.answerActions}>
+          <TouchableOpacity style={styles.backButton} onPress={backToQuiz}>
+            <Ionicons name="arrow-back-outline" size={20} color="white" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>返回默写</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.restartButton} onPress={restartQuiz}>
+            <Ionicons name="refresh-outline" size={20} color="white" style={styles.buttonIcon} />
+            <Text style={styles.buttonText}>重新默写</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -252,8 +297,8 @@ const QuizScreen = ({ words }) => {
     <View style={styles.container}>
       {!quizStarted ? (
         renderQuizSettings()
-      ) : showAnswers ? (
-        renderAnswers()
+      ) : showAllAnswers ? (
+        renderAllAnswers()
       ) : (
         renderQuizInterface()
       )}
@@ -335,7 +380,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
     padding: 12,
     borderRadius: 8,
-    marginTop: 24,
+    flex: 1,
+  },
+  showAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#3B82F6',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#6B7280',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
   },
   restartButton: {
     flexDirection: 'row',
@@ -344,7 +407,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F59E0B',
     padding: 12,
     borderRadius: 8,
-    marginTop: 16,
+    flex: 1,
   },
   buttonIcon: {
     marginRight: 8,
@@ -397,11 +460,30 @@ const styles = StyleSheet.create({
     fontSize: 18,
     borderWidth: 1,
     borderColor: '#ddd',
+    marginBottom: 16,
+  },
+  currentAnswerContainer: {
+    padding: 12,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#93C5FD',
+  },
+  answerLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  correctAnswerText: {
+    fontSize: 18,
+    color: '#3B82F6',
+    fontWeight: '600',
   },
   navigationButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 16,
+    marginBottom: 16,
   },
   navButton: {
     flex: 1,
@@ -421,9 +503,15 @@ const styles = StyleSheet.create({
   navButtonText: {
     fontSize: 16,
     color: '#666',
+    marginHorizontal: 8,
   },
   navButtonTextDisabled: {
     color: '#999',
+  },
+  quizActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 'auto',
   },
   answersContainer: {
     flex: 1,
@@ -453,6 +541,11 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  currentAnswerHighlight: {
+    borderWidth: 2,
+    borderColor: '#F59E0B',
+    backgroundColor: '#FFFBEB',
+  },
   questionText: {
     fontSize: 18,
     fontWeight: '600',
@@ -462,23 +555,18 @@ const styles = StyleSheet.create({
   answersCompare: {
     gap: 12,
   },
-  answerLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
   userAnswerText: {
     fontSize: 16,
     color: '#1E293B',
   },
-  correctAnswerText: {
-    fontSize: 16,
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
   emptyAnswer: {
     color: '#999',
     fontStyle: 'italic',
+  },
+  answerActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
   },
 });
 
