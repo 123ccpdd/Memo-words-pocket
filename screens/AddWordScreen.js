@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView,Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 
@@ -81,7 +81,7 @@ const AddWordScreen = ({ addWord, importWords }) => {
   };
 
   const openDeepSeek = async () => {
-    const url = 'https://www.deepseek.com';
+    const url = 'https://chat.deepseek.com';
     
     try {
       // 检查是否可以打开该链接
@@ -137,14 +137,12 @@ const AddWordScreen = ({ addWord, importWords }) => {
 
         <View style={styles.importControls}>
           <TouchableOpacity style={styles.importButton} onPress={pickFile}>
-            <Ionicons name="file-outline" size={18} color="#666" style={styles.importIcon} />
             <Text style={styles.importText}>选择TXT文件</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.importControls}>
           <TouchableOpacity style={styles.importButton} onPress={openDeepSeek}>
-            <Ionicons name="file-outline" size={18} color="#666" style={styles.importIcon} />
-            <Text style={styles.importText}>AI自动生成txt文件</Text>
+            <Text style={styles.importText}>点击进入deepSeek自动生成txt</Text>
           </TouchableOpacity>
         </View>        
 
